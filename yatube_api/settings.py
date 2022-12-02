@@ -39,7 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'posts',
     'rest_framework', 
-    'rest_framework.authtoken', 
+    'rest_framework.authtoken',
+    'api',
+    'corsheaders',
 ]
 
 REST_FRAMEWORK = {
@@ -52,6 +54,8 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -135,3 +139,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Auto-create primaty key without WARNINGS
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
+
+# Accept requests from all hosts
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_URLS_REGEX = r'^/api/.*$'
