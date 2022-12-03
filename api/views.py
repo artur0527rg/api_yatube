@@ -66,6 +66,16 @@ class CommentViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_403_FORBIDDEN)
 
+    def update(self, request, id, pk=None):
+        comment = Comment.objects.get(pk=pk)
+        if request.user == comment.author:
+            serializer = CommentSerializer(comment, data=request.data, partial=False)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
     def partial_update(self, request,id, pk=None):
         comment = Comment.objects.get(pk=pk)
         if request.user == comment.author:
