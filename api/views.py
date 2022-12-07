@@ -3,6 +3,8 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from .premissions import IsAuthorOrReadOnly
 
 from posts.models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer
@@ -12,6 +14,7 @@ from .serializers import PostSerializer, CommentSerializer
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+    permission_classes = [IsAuthorOrReadOnly]
 
     def create(self, request):
         if request.user.is_authenticated:
@@ -25,23 +28,21 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def update(self, request, pk=None):
         post = get_object_or_404(Post, pk=pk)
-        if request.user == post.author:
-            serializer = PostSerializer(post, data = request.data, partial=False)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        return Response(status=status.HTTP_403_FORBIDDEN)
+        self.check_object_permissions(request=request, obj=post)
+        serializer = PostSerializer(post, data = request.data, partial=False)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def partial_update(self, request, pk=None):
         post = get_object_or_404(Post, pk=pk)
-        if request.user == post.author:
-            serializer = PostSerializer(post, data = request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        return Response(status=status.HTTP_403_FORBIDDEN)
+        self.check_object_permissions(request=request, obj=post)
+        serializer = PostSerializer(post, data = request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
     
     def destroy(self, request, pk=None):
         post = get_object_or_404(Post, pk=pk)
